@@ -1,98 +1,62 @@
 import React from "react";
 import "./App.css";
 import Items from "./Components/Items";
+import { connect } from "react-redux";
+import { createTodo, deleteTodo, isCompletedTodo, editTodo, isEditMode, getTodoFromLS } from "./redux/actions";
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      todoList: [],
       inputValue: "",
     };
-    this.state.todoList = JSON.parse(localStorage.getItem("todoList") || '[]');
+    this.props.getTodoFromLS();
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.todoList !== this.state.todoList){
-      localStorage.setItem('todoList', JSON.stringify(this.state.todoList))
+    if (prevState.todoList !== this.props.todoList) {
+      console.log('work1')
+      localStorage.setItem("todoList", JSON.stringify(this.props.todoList));
     }
-    console.log('dsadsa')
   }
 
   inputTextChangeHandler = (event) => {
     this.setState({ inputValue: event.target.value });
   };
 
-  checkboxHandler = (id) => {
-    this.state.todoList.forEach((elem) => {
-      if (elem.id === id) {
-        elem.completed = !elem.completed;
-        this.setState({
-          todoList: [...this.state.todoList],
-        });
-      }
-    });
-  };
-
   keyDownHandler = (event) => {
-    if (event.key === "Enter" && this.state.inputValue.trim() !== '') {
-      this.setState({
-        todoList: [
-          ...this.state.todoList,
-          {
-            id: Date.now(),
-            text: this.state.inputValue,
-            completed: false,
-            edit: false
-          },
-        ],
+    if (event.key === "Enter" && this.state.inputValue.trim() !== "") {
+      this.props.createTodo({
+        id: Date.now(),
+        text: this.state.inputValue,
+        completed: false,
+        edit: false,
       });
       this.setState({ inputValue: "" });
-      console.log(this.state);
     }
+  };
+
+  checkboxHandler = (id) => {
+    this.props.isCompletedTodo(id);
   };
 
   deleteHandler = (id) => {
-    this.setState({
-      todoList: [...this.state.todoList.filter((elem) => elem.id !== id)],
-    });
+    this.props.deleteTodo(id);
   };
 
   editModeHandler = (id) => {
-    this.state.todoList.forEach((elem) => {
-      if (elem.id === id) {
-        elem.edit = !elem.edit;
-        this.setState({
-          todoList: [...this.state.todoList],
-        });
-      }
-    });
-  }
+    this.props.isEditMode(id);
+  };
 
   itemInputChangeHandler = (id, event) => {
-    this.state.todoList.forEach((elem) => {
-      if (elem.id === id) {
-        elem.text = event.target.value;
-        this.setState({
-          todoList: [...this.state.todoList],
-        });
-      }
-    });
-  }
+    this.props.editTodo(id, event.target.value)
+  };
 
   itemInputEditModeChangeHandler = (event, id, text) => {
-    if (event.key === "Enter" && text.trim() !== '') {
-      this.state.todoList.forEach((elem) => {
-        console.log(elem.edit)
-        if (elem.id === id) {
-          elem.edit = !elem.edit;
-          this.setState({
-            todoList: [...this.state.todoList],
-          });
-        }
-      });
+    if (event.key === "Enter" && text.trim() !== "") {
+      this.props.isEditMode(id);
     }
-  }
+  };
 
   render() {
     return (
@@ -107,12 +71,12 @@ class App extends React.Component {
           onKeyDown={this.keyDownHandler}
         />
         <p className="todo-out__title">
-          {this.state.todoList.length > 0
+          {this.props.todoList.length > 0
             ? "Список дел:"
             : "Запланируй что-то)"}
         </p>
         <Items
-          todoList={this.state.todoList}
+          todoList={this.props.todoList}
           deleteHandler={this.deleteHandler}
           checkboxHandler={this.checkboxHandler}
           editModeHandler={this.editModeHandler}
@@ -124,4 +88,20 @@ class App extends React.Component {
   }
 }
 
-export default App;
+const mapDispatchToProps = {
+  createTodo,
+  deleteTodo,
+  isCompletedTodo,
+  editTodo,
+  isEditMode,
+  getTodoFromLS
+};
+
+const mapStateToProps = state => {
+  console.log(state)
+  return {
+    todoList: state.todoList.todoList
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

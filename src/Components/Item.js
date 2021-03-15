@@ -1,7 +1,6 @@
-import React from "react";
+import React, { memo } from "react";
 
 function Item(props) {
-
   return (
     <li className="todo-out__item item">
       <label
