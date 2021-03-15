@@ -1,9 +1,28 @@
-import { CREATE_TODO, DELETE_TODO, IS_COMPLETED_TODO, EDIT_TODO, IS_EDIT_MODE, GET_TODO_FROM_LS } from "./types";
+import {ADD_TODO, GET_TODO_FROM_LS, IS_COMPLETE_TODO, DELETE_TODO, TODO_EDIT_MODE_TOGGLE, EDIT_TODO, SET_TODO_TO_LS} from './constants';
 
-export function createTodo(todo) {
+export function addTodo(todo) {
     return {
-        type: CREATE_TODO,
+        type: ADD_TODO,
         payload: todo
+    }
+}
+
+export function getTodoFromLS() {
+    return {
+        type: GET_TODO_FROM_LS
+    }
+}
+
+export function setTodoToLS() {
+    return {
+        type: SET_TODO_TO_LS
+    }
+}
+
+export function isCompleteTodo(id) {
+    return {
+        type: IS_COMPLETE_TODO,
+        payload: id
     }
 }
 
@@ -14,16 +33,9 @@ export function deleteTodo(id) {
     }
 }
 
-export function isCompletedTodo(id) {
+export function todoEditModeToggle(id) {
     return {
-        type: IS_COMPLETED_TODO,
-        payload: id
-    }
-}
-
-export function isEditMode(id) {
-    return {
-        type: IS_EDIT_MODE,
+        type: TODO_EDIT_MODE_TOGGLE,
         payload: id
     }
 }
@@ -35,8 +47,3 @@ export function editTodo(id, text) {
     }
 }
 
-export function getTodoFromLS() {
-    return {
-        type: GET_TODO_FROM_LS
-    }
-}

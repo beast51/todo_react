@@ -1,8 +1,16 @@
 import React from "react";
 import "./App.css";
 import Items from "./Components/Items";
+import Input from "./Components/Input";
 import { connect } from "react-redux";
-import { createTodo, deleteTodo, isCompletedTodo, editTodo, isEditMode, getTodoFromLS } from "./redux/actions";
+import {
+  addTodo,
+  getTodoFromLS,
+  setTodoToLS,
+  deleteTodo,
+  todoEditModeToggle,
+  editTodo
+} from "./redux/actions";
 
 class App extends React.Component {
   constructor(props) {
@@ -15,60 +23,49 @@ class App extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.todoList !== this.props.todoList) {
-      console.log('work1')
-      localStorage.setItem("todoList", JSON.stringify(this.props.todoList));
+      this.props.setTodoToLS();
     }
   }
 
-  inputTextChangeHandler = (event) => {
+  //Enter text on main input
+  mainInputTextChange = (event) => {
     this.setState({ inputValue: event.target.value });
   };
 
-  keyDownHandler = (event) => {
-    if (event.key === "Enter" && this.state.inputValue.trim() !== "") {
-      this.props.createTodo({
-        id: Date.now(),
-        text: this.state.inputValue,
-        completed: false,
-        edit: false,
-      });
-      this.setState({ inputValue: "" });
-    }
+  //Add element Todo
+  addTodo = (text) => {
+    this.props.addTodo({
+      id: Date.now(),
+      text: text,
+      completed: false,
+      edit: false,
+    });
   };
 
-  checkboxHandler = (id) => {
-    this.props.isCompletedTodo(id);
-  };
-
-  deleteHandler = (id) => {
+  //Delete Todo elemet
+  deleteItem = (id) => () => {
     this.props.deleteTodo(id);
   };
 
-  editModeHandler = (id) => {
-    this.props.isEditMode(id);
+  //Show / Hide input for edit element todo on Double Click
+  itemEditModeToggleOnDblClick = (id) => () => {
+    this.props.todoEditModeToggle(id);
   };
 
-  itemInputChangeHandler = (id, event) => {
-    this.props.editTodo(id, event.target.value)
-  };
-
-  itemInputEditModeChangeHandler = (event, id, text) => {
-    if (event.key === "Enter" && text.trim() !== "") {
-      this.props.isEditMode(id);
-    }
+  //Edit text in element Todo
+  itemInputChangeText = (id) => (text) => {
+    this.props.editTodo(id,text);
   };
 
   render() {
     return (
       <div className="todo">
         <h1>Todo</h1>
-        <input
+        <Input
           className="todo__input"
-          type="text"
           placeholder="Введите название дела"
-          value={this.state.inputValue}
-          onChange={this.inputTextChangeHandler}
-          onKeyDown={this.keyDownHandler}
+          onChange={this.mainInputTextChange}
+          onEnter={this.addTodo}
         />
         <p className="todo-out__title">
           {this.props.todoList.length > 0
@@ -77,11 +74,9 @@ class App extends React.Component {
         </p>
         <Items
           todoList={this.props.todoList}
-          deleteHandler={this.deleteHandler}
-          checkboxHandler={this.checkboxHandler}
-          editModeHandler={this.editModeHandler}
-          itemInputChangeHandler={this.itemInputChangeHandler}
-          itemInputEditModeChangeHandler={this.itemInputEditModeChangeHandler}
+          deleteItem={this.deleteItem}
+          itemEditModeToggleOnDblClick={this.itemEditModeToggleOnDblClick}
+          itemInputChangeText={this.itemInputChangeText}
         />
       </div>
     );
@@ -89,19 +84,16 @@ class App extends React.Component {
 }
 
 const mapDispatchToProps = {
-  createTodo,
+  addTodo,
+  getTodoFromLS,
+  setTodoToLS,
   deleteTodo,
-  isCompletedTodo,
-  editTodo,
-  isEditMode,
-  getTodoFromLS
+  todoEditModeToggle,
+  editTodo
 };
 
-const mapStateToProps = state => {
-  console.log(state)
-  return {
-    todoList: state.todoList.todoList
-  }
-}
+const mapStateToProps = (state) => {
+  return { todoList: state.todoList.todoList };
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
